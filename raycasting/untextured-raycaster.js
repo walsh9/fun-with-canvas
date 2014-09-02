@@ -6,14 +6,14 @@ var canvasWidth = canvas.width;
 var canvasHeight = canvas.height;
 var ctx = canvas.getContext("2d");
 world = {
-    ceilColor: "rgb(0,0,0)",        //black
-    floorColor: "rgb(128,128,128)", //gray
+    ceilColor: "rgb(9,9,59)",        
+    floorColor: "rgb(128,128,179)", 
     wallColors: [
-    [255, 255, 0],   // default: yellow;
-    [255, 0, 0],     // 1: red
-    [0, 255, 0],     // 2: green
-    [0, 0, 255],     // 3: blue
-    [255, 255, 255]  // 4: white;
+    [170, 142, 57],   // default 
+    [52, 52, 119],     // 1
+    [41, 79, 109],     // 2
+    [75, 45, 115],     // 3
+    [86, 86, 149]  // 4
   ],
   map: [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],

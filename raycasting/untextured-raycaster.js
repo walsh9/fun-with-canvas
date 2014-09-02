@@ -1,6 +1,8 @@
-/*  Canvas implementation of raycaster based on example at
- *  http://lodev.org/cgtutor/raycasting.html
+/*  Canvas implementation of raycaster based on examples at
+ *  http://lodev.org/cgtutor/raycasting.html and
+ *  http://www.permadi.com/tutorial/raycast/index.html
  */
+
 (function (canvas) {
 var canvasWidth = canvas.width;
 var canvasHeight = canvas.height;
@@ -8,7 +10,7 @@ var ctx = canvas.getContext("2d");
 world = {
     ceilColor: "rgb(9,9,59)",        
     floorColor: "rgb(128,128,179)", 
-    wallColors: [
+    wallColors: [    
     [170, 142, 57],   // default 
     [52, 52, 119],     // 1
     [41, 79, 109],     // 2
@@ -63,16 +65,16 @@ var render = function () {
         perpWallDist,
         stepX, stepY,
         hit, side, mapTile,
-        lineHeight,
+        lineHeight, brightness,
         drawStart, drawEnd,
         color, oldColor;
     ctx.save();
-    ctx.lineWidth = 1.1; // fix subpixel glitches;
+    ctx.lineCaps = "square";
     ctx.clearRect(0,0,canvasWidth,canvasHeight);
     ctx.fillStyle = world.ceilColor; //ceiling
-    ctx.fillRect(0,0,canvasWidth,canvasHeight / 2);
+    ctx.fillRect(0.5,0.5,canvasWidth,canvasHeight / 2 + 0.5);
     ctx.fillStyle = world.floorColor; //floor
-    ctx.fillRect(0,canvasHeight / 2,canvasWidth,canvasHeight);
+    ctx.fillRect(0.5,canvasHeight / 2 - 0.5,canvasWidth,canvasHeight);
     ctx.beginPath();
     for (var x = 0.5; x < canvasWidth; x++) {
         cameraX = 2 * x / canvasWidth - 1;
@@ -121,6 +123,10 @@ var render = function () {
             color[1] = parseInt(color[1] / 2);
             color[2] = parseInt(color[2] / 2);
         }
+        brightness = Math.min(1, 1/perpWallDist * 4);
+        color[0] = parseInt(color[0] * brightness);
+        color[1] = parseInt(color[1] * brightness);
+        color[2] = parseInt(color[2] * brightness);
         color = "rgb(" + color.join(",") + ")";
         if (oldColor && color !== oldColor) {
             ctx.strokeStyle = oldColor;

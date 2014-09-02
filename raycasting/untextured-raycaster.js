@@ -1,12 +1,21 @@
 /*  Canvas implementation of raycaster based on example at
  *  http://lodev.org/cgtutor/raycasting.html
  */
-
 (function (canvas) {
 var canvasWidth = canvas.width;
 var canvasHeight = canvas.height;
 var ctx = canvas.getContext("2d");
-var worldMap = [
+world = {
+    ceilColor: "rgb(0,0,0)",        //black
+    floorColor: "rgb(128,128,128)", //gray
+    wallColors: [
+    [255, 255, 0],   // default: yellow;
+    [255, 0, 0],     // 1: red
+    [0, 255, 0],     // 2: green
+    [0, 0, 255],     // 3: blue
+    [255, 255, 255]  // 4: white;
+  ],
+  map: [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -31,7 +40,8 @@ var worldMap = [
     [1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-  ];
+  ]
+};
 var player = {
     x: 22, 
     y: 12, 
@@ -40,7 +50,7 @@ var player = {
 };
 var camera = {
     planeX: 0,
-    planeY: 0.66
+    planeY: 0.67
 };
 
 var render = function () {
@@ -52,15 +62,16 @@ var render = function () {
         deltaDistX, deltaDistY,
         perpWallDist,
         stepX, stepY,
-        hit, side,
+        hit, side, mapTile,
         lineHeight,
         drawStart, drawEnd,
         color, oldColor;
     ctx.save();
+    ctx.lineWidth = 1.1; // fix subpixel glitches;
     ctx.clearRect(0,0,canvasWidth,canvasHeight);
-    ctx.fillStyle = "#000000"; //ceiling
+    ctx.fillStyle = world.ceilColor; //ceiling
     ctx.fillRect(0,0,canvasWidth,canvasHeight / 2);
-    ctx.fillStyle = "#555555"; //floor
+    ctx.fillStyle = world.floorColor; //floor
     ctx.fillRect(0,canvasHeight / 2,canvasWidth,canvasHeight);
     ctx.beginPath();
     for (var x = 0.5; x < canvasWidth; x++) {
@@ -91,7 +102,7 @@ var render = function () {
                 mapY += stepY;
                 side = 1;
             }
-            if (worldMap[mapX][mapY] > 0) hit = 1;
+            if (world.map[mapX][mapY] > 0) hit = 1;
         }
         perpWallDist = (side === 0) ?
             Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) :
@@ -99,16 +110,18 @@ var render = function () {
         lineHeight = Math.abs(parseInt(canvasHeight / perpWallDist));
         drawStart = Math.max(0, -lineHeight / 2 + canvasHeight / 2);
         drawEnd = Math.min(canvasHeight - 1, lineHeight / 2 + canvasHeight / 2);
-        switch(worldMap[mapX][mapY]) {
-            case 1:  color = "#ff0000";  break; //red
-            case 2:  color = "#00ff00";  break; //green
-            case 3:  color = "#0000ff";  break; //blue
-            case 4:  color = "#ffffff";  break; //white
-            default: color = "#ffff00"; //yellow
+        mapTile = world.map[mapX][mapY];
+        if (mapTile > 0 && mapTile < world.wallColors.length) {
+            color = world.wallColors[mapTile].slice(0);
+        } else {
+            color = world.wallColors[0].slice(0);
         }
         if (side === 1) {
-            color = color.replace(/f/g, "8");
+            color[0] = parseInt(color[0] / 2);
+            color[1] = parseInt(color[1] / 2);
+            color[2] = parseInt(color[2] / 2);
         }
+        color = "rgb(" + color.join(",") + ")";
         if (oldColor && color !== oldColor) {
             ctx.strokeStyle = oldColor;
             ctx.stroke();
@@ -119,7 +132,7 @@ var render = function () {
         ctx.lineTo(x, drawEnd);
         oldColor = color;
     }
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = color; 
     ctx.stroke();
     ctx.closePath();
     ctx.restore();
@@ -146,18 +159,18 @@ var update = function(modifier) {
     var rotSpeed =  modifier * 3;
     var oldDirX, oldPlaneX;
     if (38 in keysDown) { // up
-        if (worldMap[parseInt(player.x + player.dirX * moveSpeed)][parseInt(player.y)] === 0) {
+        if (world.map[parseInt(player.x + player.dirX * moveSpeed)][parseInt(player.y)] === 0) {
             player.x += player.dirX * moveSpeed;
         }
-        if(worldMap[parseInt(player.x)][parseInt(player.y + player.dirY * moveSpeed)] === 0) {
+        if(world.map[parseInt(player.x)][parseInt(player.y + player.dirY * moveSpeed)] === 0) {
              player.y += player.dirY * moveSpeed;
         }
     }
     if (40 in keysDown) { // down
-        if (worldMap[parseInt(player.x - player.dirX * moveSpeed)][parseInt(player.y)] === 0) {
+        if (world.map[parseInt(player.x - player.dirX * moveSpeed)][parseInt(player.y)] === 0) {
             player.x -= player.dirX * moveSpeed;
         }
-        if(worldMap[parseInt(player.x)][parseInt(player.y - player.dirY * moveSpeed)] === 0) {
+        if(world.map[parseInt(player.x)][parseInt(player.y - player.dirY * moveSpeed)] === 0) {
              player.y -= player.dirY * moveSpeed;
         }
     }

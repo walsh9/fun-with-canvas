@@ -107,7 +107,8 @@ var render = function () {
             if (world.map[mapX][mapY] > 0) hit = 1;
         }
         perpWallDist = (side === 0) ?
-            Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) :
+            Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) 
+            :
             Math.abs((mapY - rayPosY + (1 - stepY) / 2) / rayDirY);
         lineHeight = Math.abs(parseInt(canvasHeight / perpWallDist));
         drawStart = Math.max(0, -lineHeight / 2 + canvasHeight / 2);

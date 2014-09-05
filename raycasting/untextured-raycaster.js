@@ -51,8 +51,6 @@ var player = {
     y: 12, 
     dirX: -1,
     dirY: 0,
-};
-var camera = {
     planeX: 0,
     planeY: 0.67
 };
@@ -74,7 +72,7 @@ var render = function () {
     ctx.lineCaps = "square";
     ctx.clearRect(0,0,canvasWidth,canvasHeight);
     ctx.fillStyle = world.ceilColor; //ceiling
-    ctx.fillRect(0.5,0.5,canvasWidth,canvasHeight / 2 + 0.5);
+    ctx.fillRect(0.5,0.5,canvasWidth,canvasHeight);
     ctx.fillStyle = world.floorColor; //floor
     ctx.fillRect(0.5,canvasHeight / 2 - 0.5,canvasWidth,canvasHeight);
     ctx.beginPath();
@@ -82,8 +80,8 @@ var render = function () {
         cameraX = 2 * x / canvasWidth - 1;
         rayPosX = player.x;
         rayPosY = player.y;
-        rayDirX = player.dirX + camera.planeX * cameraX;
-        rayDirY = player.dirY + camera.planeY * cameraX;
+        rayDirX = player.dirX + player.planeX * cameraX;
+        rayDirY = player.dirY + player.planeY * cameraX;
         mapX = parseInt(rayPosX);
         mapY = parseInt(rayPosY);
         deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
@@ -163,44 +161,64 @@ addEventListener("keyup", function (e) {
     delete keysDown[e.keyCode];
 }, false);
 
+actions = {
+    moveForward: function (actor, map, moveSpeed) {
+        if (map[parseInt(actor.x + actor.dirX * moveSpeed)][parseInt(actor.y)] === 0) {
+            actor.x += actor.dirX * moveSpeed;
+        }
+        if(map[parseInt(actor.x)][parseInt(actor.y + actor.dirY * moveSpeed)] === 0) {
+             actor.y += actor.dirY * moveSpeed;
+        }
+    },
+    moveBackward: function (actor, map, moveSpeed) {
+        if (map[parseInt(actor.x - actor.dirX * moveSpeed)][parseInt(actor.y)] === 0) {
+            actor.x -= actor.dirX * moveSpeed;
+        }
+        if(map[parseInt(actor.x)][parseInt(actor.y - actor.dirY * moveSpeed)] === 0) {
+             actor.y -= actor.dirY * moveSpeed;
+        }
+    },
+    turnRight: function(actor, rotSpeed) {
+        var oldDirX, oldPlaneX;
+        oldDirX = actor.dirX;
+        actor.dirX = actor.dirX * Math.cos(-rotSpeed) - actor.dirY * Math.sin(-rotSpeed);
+        actor.dirY = oldDirX * Math.sin(-rotSpeed) + actor.dirY * Math.cos(-rotSpeed);
+        oldPlaneX = actor.planeX;
+        actor.planeX = actor.planeX * Math.cos(-rotSpeed) - actor.planeY * Math.sin(-rotSpeed);
+        actor.planeY = oldPlaneX * Math.sin(-rotSpeed) + actor.planeY * Math.cos(-rotSpeed);
+    },
+    turnLeft: function(actor, rotSpeed) {
+        oldDirX = actor.dirX;
+        actor.dirX = actor.dirX * Math.cos(rotSpeed) - actor.dirY * Math.sin(rotSpeed);
+        actor.dirY = oldDirX * Math.sin(rotSpeed) + actor.dirY * Math.cos(rotSpeed);
+        oldPlaneX = actor.planeX;
+        actor.planeX = actor.planeX * Math.cos(rotSpeed) - actor.planeY * Math.sin(rotSpeed);
+        actor.planeY = oldPlaneX * Math.sin(rotSpeed) + actor.planeY * Math.cos(rotSpeed);
+    },
+    toggle: function(option) {
+        option = !option;
+    }
+};
+
+
 var update = function(modifier) {
     var moveSpeed =  modifier * 5;
     var rotSpeed =  modifier * 3;
     var oldDirX, oldPlaneX;
     if (38 in keysDown) { // up
-        if (world.map[parseInt(player.x + player.dirX * moveSpeed)][parseInt(player.y)] === 0) {
-            player.x += player.dirX * moveSpeed;
-        }
-        if(world.map[parseInt(player.x)][parseInt(player.y + player.dirY * moveSpeed)] === 0) {
-             player.y += player.dirY * moveSpeed;
-        }
+        actions.moveForward(player, world.map, moveSpeed);
     }
     if (40 in keysDown) { // down
-        if (world.map[parseInt(player.x - player.dirX * moveSpeed)][parseInt(player.y)] === 0) {
-            player.x -= player.dirX * moveSpeed;
-        }
-        if(world.map[parseInt(player.x)][parseInt(player.y - player.dirY * moveSpeed)] === 0) {
-             player.y -= player.dirY * moveSpeed;
-        }
+        actions.moveBackward(player, world.map, moveSpeed);
     }
     if (39 in keysDown) { // right
-      oldDirX = player.dirX;
-      player.dirX = player.dirX * Math.cos(-rotSpeed) - player.dirY * Math.sin(-rotSpeed);
-      player.dirY = oldDirX * Math.sin(-rotSpeed) + player.dirY * Math.cos(-rotSpeed);
-      oldPlaneX = camera.planeX;
-      camera.planeX = camera.planeX * Math.cos(-rotSpeed) - camera.planeY * Math.sin(-rotSpeed);
-      camera.planeY = oldPlaneX * Math.sin(-rotSpeed) + camera.planeY * Math.cos(-rotSpeed);
+        actions.turnRight(player, rotSpeed);
     }
     if (37 in keysDown) { // left
-      oldDirX = player.dirX;
-      player.dirX = player.dirX * Math.cos(rotSpeed) - player.dirY * Math.sin(rotSpeed);
-      player.dirY = oldDirX * Math.sin(rotSpeed) + player.dirY * Math.cos(rotSpeed);
-      oldPlaneX = camera.planeX;
-      camera.planeX = camera.planeX * Math.cos(rotSpeed) - camera.planeY * Math.sin(rotSpeed);
-      camera.planeY = oldPlaneX * Math.sin(rotSpeed) + camera.planeY * Math.cos(rotSpeed);
+        actions.turnLeft(player, rotSpeed);
     }
     if (70 in keysDown) { // left
-      pleaseShowFps = !pleaseShowFps;
+      pleaseShowFps = ! pleaseShowFps;
       delete keysDown[70];
     }
 };

@@ -221,9 +221,9 @@ actions = {
 };
 
 
-var update = function(modifier) {
-    var moveSpeed =  modifier * 5;
-    var rotSpeed =  modifier * 3;
+var update = function(time) {
+    var moveSpeed =  time * 5;
+    var rotSpeed =  time * 3;
     var oldDirX, oldPlaneX;
     if (38 in keysDown) { // up
         actions.moveForward(player, currentMap, moveSpeed);
@@ -253,20 +253,25 @@ var showFps = function (ctx, fps) {
     ctx.fillText(fps.toFixed(2) + " fps", 10, 20);
 };
 
+var runTime = 0;
+var timeStep = 1 / 30; 
+var currentTime = Date.now() / 1000;
 var main = function () {
-    var now = Date.now();
-    var delta = now - then;
-    var fps = (1000/delta);
-
-    update(delta / 1000);
+    var newTime = Date.now() / 1000;
+    var frameTime = newTime - currentTime;
+    currentTime = newTime;
+    while (frameTime > 0) {
+        var delta = Math.min(frameTime, timeStep);
+        update(delta);
+        frameTime -= delta;
+        runTime += delta;
+    }
     render(ctx, player, currentMap);
     if (pleaseShowFps) {
-        showFps(ctx, fps);
+        showFps(ctx, 1000 / frameTime );
     }
-    then = now;
     requestAnimationFrame(main, canvas);
 };
-var then = Date.now();
 main();
 
 }(canvas));

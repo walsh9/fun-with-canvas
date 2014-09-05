@@ -4,6 +4,8 @@
  */
 
 (function (canvas) {
+
+var pleaseShowFps = false;
 var canvasWidth = canvas.width;
 var canvasHeight = canvas.height;
 var ctx = canvas.getContext("2d");
@@ -197,13 +199,28 @@ var update = function(modifier) {
       camera.planeX = camera.planeX * Math.cos(rotSpeed) - camera.planeY * Math.sin(rotSpeed);
       camera.planeY = oldPlaneX * Math.sin(rotSpeed) + camera.planeY * Math.cos(rotSpeed);
     }
+    if (70 in keysDown) { // left
+      pleaseShowFps = !pleaseShowFps;
+      delete keysDown[70];
+    }
+};
+
+var showFps = function (ctx, fps) {
+    ctx.fillStyle = "#ffffff";
+    ctx.font      = "normal 10px Verdana";
+    ctx.fillText(fps.toFixed(2) + " fps", 10, 20);
 };
 
 var main = function () {
     var now = Date.now();
     var delta = now - then;
+    var fps = (1000/delta);
+
     update(delta / 1000);
     render();
+    if (pleaseShowFps) {
+        showFps(ctx, fps);
+    }
     then = now;
     requestAnimationFrame(main);
 };

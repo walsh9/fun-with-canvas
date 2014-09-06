@@ -189,13 +189,14 @@ var main = function () {
             frameTime -= delta;
             runTime += delta;
         }
-    if (!stopRender) {
+
         renderer.drawScene(player, currentMap, frameTime);
         if (options.pleaseShowFps) {
             renderer.debugText(fps.toFixed(2) + " fps");
         }
+    if (!stopRender) {
+        requestAnimationFrame(main, canvas);
     }
-    requestAnimationFrame(main, canvas);
 };
 renderer.init(ctx, main);
 }(canvas));

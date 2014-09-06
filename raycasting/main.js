@@ -1,3 +1,15 @@
+/***********************************************
+ *  Useful resources and references
+ ***********************************************
+ *  http://lodev.org/cgtutor/raycasting.html 
+ *  http://www.permadi.com/tutorial/raycast/index.html
+ *  http://gafferongames.com/game-physics/fix-your-timestep/
+ *  https://hacks.mozilla.org/2011/12/faster-canvas-pixel-manipulation-with-typed-arrays/
+ *
+ *  Public Domain textures from rubberduck
+ *  http://opengameart.org/content/40-free-metal-textures-from-mtc-sets
+ */
+
 (function (canvas) {
 
 var options =  {
@@ -129,7 +141,7 @@ actions = {
         }
         stopRender = false;
         renderer.setOptions(options);
-        renderer.init(main);
+        renderer.init(ctx, main);
     }
 };
 var update = function(time) {
@@ -178,14 +190,12 @@ var main = function () {
             runTime += delta;
         }
     if (!stopRender) {
-        renderer.drawScene(ctx, player, currentMap, frameTime);
+        renderer.drawScene(player, currentMap, frameTime);
         if (options.pleaseShowFps) {
-            renderer.debugText(ctx, fps.toFixed(2) + " fps");
+            renderer.debugText(fps.toFixed(2) + " fps");
         }
     }
     requestAnimationFrame(main, canvas);
 };
-renderer.init(main);
-
-
+renderer.init(ctx, main);
 }(canvas));

@@ -1,13 +1,11 @@
-/*  Canvas implementation of raycaster based on examples at
- *  http://lodev.org/cgtutor/raycasting.html
- *  http://www.permadi.com/tutorial/raycast/index.html
- */
-
 var UntexturedRaycaster = function(){
     var options =  {
         pleaseDoShading: true
     };
-    var init = function (callback){
+    var init = function (context, callback){
+        ctx = context;
+        w = ctx.canvas.width;
+        h = ctx.canvas.height;
         // no resources to load
         callback();
     };
@@ -46,22 +44,22 @@ var UntexturedRaycaster = function(){
         color[2] = parseInt(color[2] * brightness);
         return color;
     };
-    var debugText = function (ctx, text) {
+    var debugText = function (text) {
         ctx.fillStyle = "#ffffff";
         ctx.font      = "normal 10px Verdana";
         ctx.fillText(text, 10, 20);
     };
-    var drawCeiling = function(ctx, w, h) {
+    var drawCeiling = function() {
         var color = "rgb( 83, 83, 101)";
         ctx.fillStyle = color; 
         ctx.fillRect(0.5, 0.5, w, h);
     };
-    var drawFloor = function(ctx, w, h) {
+    var drawFloor = function() {
         var color = "rgb(121,121,174)";
         ctx.fillStyle = color; 
         ctx.fillRect(0.5, h / 2 - 0.5, w, h);
     };
-    var drawWalls = function (viewer, map, ctx, w, h) {
+    var drawWalls = function (viewer, map) {
         var perpWallDist, lineHeight, drawStart, drawEnd, colorRGB, oldColor, color;
         ctx.beginPath();
         for (var x = 0.5; x < w; x++) {
@@ -117,7 +115,7 @@ var UntexturedRaycaster = function(){
         ctx.stroke();
         ctx.closePath();
     };
-    var drawScene = function (ctx, viewer, map) {
+    var drawScene = function (viewer, map) {
         var cameraX,
             rayPosX, rayPosY,
             rayDirX, rayDirY,
@@ -130,14 +128,12 @@ var UntexturedRaycaster = function(){
             lineHeight, brightness,
             drawStart, drawEnd,
             color, oldColor;
-        var w = ctx.canvas.width;
-        var h = ctx.canvas.height;
         ctx.save();
         ctx.lineCaps = "square";
         ctx.clearRect(0, 0, w, h);
-        drawCeiling(ctx, w, h);
-        drawFloor(ctx, w, h);
-        drawWalls(viewer, map, ctx, w, h);
+        drawCeiling();
+        drawFloor();
+        drawWalls(viewer, map);
         ctx.restore();
     };
     return {

@@ -63,15 +63,20 @@ var TexturedRaycaster = function () {
         }
     };
     var shadeColor = (function () {
+        // prepare buffers once;
         var buf = new ArrayBuffer(4);
         var col32 = new Uint32Array(buf);
         var col8 = new Uint8ClampedArray(buf);
-        return function (color32, darkness) {
-            col32[0] = color32;
-            col8[0] *= darkness;
-            col8[1] *= darkness;
-            col8[2] *= darkness;
-            return /*r*/ col8[0] | /*g*/ col8[1] << 8 | /*b*/ col8[2] << 16 | /*a*/ 255 << 24;
+        return function (color32, brightness) {
+            if (options.pleaseDoShading && brightness < 0.9) {
+                col32[0] = color32;
+                col8[0] *= brightness;
+                col8[1] *= brightness;
+                col8[2] *= brightness;
+                return /*r*/ col8[0] | /*g*/ col8[1] << 8 | /*b*/ col8[2] << 16 | /*a*/ 255 << 24;
+            } else {
+                return color32;
+            }
         };
     }());
     var debugText = function (text) {
@@ -92,7 +97,11 @@ var TexturedRaycaster = function () {
             lineHeight, brightness,
             wallX, texX, texture32, color,
             drawStart, drawEnd,
-            d, texY, texOffset, r, g, b;
+            d, texY, texOffset, r, g, b,
+            floorXWall, floorYWall,
+            distWall, distPlayer, currentDist, 
+            weight, currentFloorX , currentFloorY,
+            floorTexX, floorTexY;
         for (var x = 0; x < w; x++) {
             cameraX = 2 * x / w - 1;
             rayPosX = viewer.x;
@@ -148,23 +157,36 @@ var TexturedRaycaster = function () {
             for(var y = drawStart; y < drawEnd; y++) {     
                 d = y * 256 - h * 128 + lineHeight * 128;  //256 and 128 factors to avoid floats
                 texY = Math.floor(((d * texHeight) / lineHeight) / 256);
-                color = texture32[texX + texY * texWidth];
-                if (side === 1) {
-                    color = shadeColor(color, 0.5);
-                }
-                if (options.pleaseDoShading) {
-                    brightness = Math.min(1, 1/perpWallDist * 3);
-                    color = shadeColor(color, brightness);
-                }
-                buffer32[x + y * w] = color;
+                buffer32[x + y * w] = shadeColor(texture32[texX + texY * texWidth],  Math.min(1, (1/perpWallDist * 3) * (side / -2 + 1)));
             }
-            //drawceiling
-            for(y = 0; y < drawStart + 1; y++) {
-                buffer32[x + y * w] = /*r*/ 60 | /*g*/ 60 << 8 | /*b*/ 80 << 16 | /*a*/ 255 << 24;
+            //floor and ceiling
+            var ceilingTex32 = textures32[0];
+            var floorTex32 = textures32[1];
+            if (side === 0 && rayDirX > 0) {
+              floorXWall = mapX;
+              floorYWall = mapY + wallX;
+            } else if (side === 0 && rayDirX < 0) {
+              floorXWall = mapX + 1.0;
+              floorYWall = mapY + wallX;
+            } else if (side === 1 && rayDirY > 0) {
+              floorXWall = mapX + wallX;
+              floorYWall = mapY;
+            } else {
+              floorXWall = mapX + wallX;
+              floorYWall = mapY + 1;
             }
-            //drawfloor
+            distWall = perpWallDist;
+            distPlayer = 0;
             for(y = drawEnd; y < h; y++) {
-                buffer32[x + y * w] = /*r*/ 90 | /*g*/ 90 << 8 | /*b*/ 90 << 16 | /*a*/ 255 << 24;
+                currentDist = h / (2 * y - h);
+                weight = (currentDist - distPlayer) / (distWall - distPlayer);
+                currentFloorX = weight * floorXWall + (1 - weight) * viewer.x;
+                currentFloorY = weight * floorYWall + (1 - weight) * viewer.y;
+                floorTexX = Math.floor(currentFloorX * texWidth) % texWidth;
+                floorTexY = Math.floor(currentFloorY * texHeight) % texHeight;
+                buffer32[x + y * w] = shadeColor(floorTex32[floorTexX + floorTexY * texWidth], 1/currentDist * 3);
+                buffer32[x + (h - y) * w] = shadeColor(ceilingTex32[floorTexX + floorTexY * texWidth],  1/currentDist * 3);
+
             }
         } // for x
     imageData.data.set(buffer8);

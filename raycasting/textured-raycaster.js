@@ -1,4 +1,5 @@
 var TexturedRaycaster = function () {
+    'use strict';
     var options =  {
         pleaseDoShading: true
     };
@@ -25,16 +26,7 @@ var TexturedRaycaster = function () {
             'i/m-030.png',
             'i/m-040.png'
         ];
-        var loadedResources = 0;
-        var resourceLoaded = function () {
-            loadedResources++;
-            console.log("Loaded resource. Total: " + loadedResources);
-            if(loadedResources == textureList.length) {
-                console.log("All resouces loaded.");
-                setup();
-            }
-        };
-        var setup = function () {
+        var setup = function (textures) {
             var canvas = document.createElement('canvas');
             canvas.width = texWidth;
             canvas.height = texHeight;
@@ -49,11 +41,20 @@ var TexturedRaycaster = function () {
             console.log("Textures ready!");
             callback();
         };
-        for (var i = 0; i < textureList.length; i ++) {
-            textures[i] = new Image();
-            textures[i].onload = resourceLoaded;
-            textures[i].src = textureList[i];
-        }
+        Promise.all(textureList.map(loadImage)).then(setup);
+    };
+    var loadImage = function (src) {
+        return new Promise(function (resolve, reject) {
+            var image = new Image();
+            image.onload = function () {
+                console.log("Image loaded: " + src);
+                resolve(image);
+            };
+            image.onerror = function () {
+                reject('Failed Loading Image: ' + src );
+            };
+            image.src = src;
+        });
     };
     var setOptions = function (newOptions) {
         for (var key in newOptions) {

@@ -1,5 +1,6 @@
 var TexturedRaycaster = function () {
     'use strict';
+    /*globals Promise, Uint32Array, ArrayBuffer, Uint8ClampedArray*/
     var options =  {
         pleaseDoShading: true
     };
@@ -9,7 +10,43 @@ var TexturedRaycaster = function () {
     var texHeight = 256;
     var ctx, w, h;
     var imageData, buffer, buffer8, buffer32;
-    var init = function (context, callback) {
+    var loadImage = function (src) {
+        return new Promise(function (resolve, reject) {
+            var image = new Image();
+            image.onload = function () {
+                console.log("Image loaded: " + src);
+                resolve(image);
+            };
+            image.onerror = function () {
+                reject("Failed Loading Image: " + src);
+            };
+            image.src = src;
+        });
+    };
+    var loadImages = function (filenames) {
+        return Promise.all(filenames.map(loadImage));
+    };
+    var imageToImageData = function (image) {
+        var myCanvas = document.createElement('canvas');
+        var myContext = myCanvas.getContext('2d');
+        myCanvas.width = texWidth;
+        myCanvas.height = texHeight;
+        myContext.drawImage(image, 0, 0);
+        var myImageData = myContext.getImageData(0, 0, texWidth, texHeight);
+        return myImageData.data;
+    };
+    var imagesToImageData = function (images) {
+        return Promise.all(images.map(imageToImageData));
+    };
+    var stuffTextureArrays = function (imgDataArray) {
+        var i;
+        for (i = 0; i < imgDataArray.length; i++) {
+            textures[i] = imgDataArray[i];
+            textures32[i] = new Uint32Array(imgDataArray[i].buffer);
+            console.log("Preparing Texture: " + i);
+        }
+    };
+    var init = function (context) {
         ctx = context;
         w = ctx.canvas.width;
         h = ctx.canvas.height;
@@ -26,39 +63,14 @@ var TexturedRaycaster = function () {
             'i/m-030.png',
             'i/m-040.png'
         ];
-        var setup = function (textures) {
-            var canvas = document.createElement('canvas');
-            canvas.width = texWidth;
-            canvas.height = texHeight;
-            var ctx    = canvas.getContext('2d');
-            for (var i = 0; i < textures.length; i++) {
-                ctx.drawImage(textures[i], 0, 0 );
-                var imageData = ctx.getImageData(0,0,texWidth,texHeight);
-                textures[i] = imageData.data;
-                textures32[i] = new Uint32Array(imageData.data.buffer);
-                console.log("Preparing Texture: " + i);
-            }
-            console.log("Textures ready!");
-            callback();
-        };
-        Promise.all(textureList.map(loadImage)).then(setup);
-    };
-    var loadImage = function (src) {
-        return new Promise(function (resolve, reject) {
-            var image = new Image();
-            image.onload = function () {
-                console.log("Image loaded: " + src);
-                resolve(image);
-            };
-            image.onerror = function () {
-                reject('Failed Loading Image: ' + src );
-            };
-            image.src = src;
-        });
+        return loadImages(textureList)
+            .then(imagesToImageData)
+            .then(stuffTextureArrays);
     };
     var setOptions = function (newOptions) {
-        for (var key in newOptions) {
-            if (key in options) {
+        var key;
+        for (key in newOptions) {
+            if (newOptions.hasOwnProperty(key) && options[key] !== undefined) {
                 options[key] = newOptions[key];
             }
         }
@@ -75,9 +87,8 @@ var TexturedRaycaster = function () {
                 col8[1] *= brightness;
                 col8[2] *= brightness;
                 return /*r*/ col8[0] | /*g*/ col8[1] << 8 | /*b*/ col8[2] << 16 | /*a*/ 255 << 24;
-            } else {
-                return color32;
             }
+            return color32;
         };
     }());
     var debugText = function (text) {

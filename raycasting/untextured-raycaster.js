@@ -1,13 +1,12 @@
-var UntexturedRaycaster = function(){
+var UntexturedRaycaster = function() {
     var options =  {
         pleaseDoShading: true
     };
-    var init = function (context, callback){
+    var init = function (context){
         ctx = context;
         w = ctx.canvas.width;
         h = ctx.canvas.height;
         // no resources to load
-        callback();
     };
     var setOptions = function (newOptions) {
         for (var key in newOptions) {

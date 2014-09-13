@@ -1,4 +1,4 @@
-var TexturedRaycaster = function () {
+var TexturedRaycaster = (function () {
     'use strict';
     /*globals Promise, Uint32Array, ArrayBuffer, Uint8ClampedArray*/
     var options =  {
@@ -86,7 +86,9 @@ var TexturedRaycaster = function () {
                 col8[0] *= brightness;
                 col8[1] *= brightness;
                 col8[2] *= brightness;
-                return /*r*/ col8[0] | /*g*/ col8[1] << 8 | /*b*/ col8[2] << 16 | /*a*/ 255 << 24;
+                /*jslint bitwise: true */
+                return col8[0] /*r*/ | col8[1] /*g*/ << 8 | col8[2] /*b*/ << 16 | 255 /*a*/ << 24;
+                /* jslint bitwise: false */
             }
             return color32;
         };
@@ -96,25 +98,15 @@ var TexturedRaycaster = function () {
         ctx.font      = "normal 10px Verdana";
         ctx.fillText(text, 10, 20);
     };
-    var drawWalls = function(viewer, map) {
-        var cameraX,
-            rayPosX, rayPosY,
-            rayDirX, rayDirY,
-            mapX, mapY,
-            sideDistX, sideDistY,
-            deltaDistX, deltaDistY,
-            perpWallDist,
-            stepX, stepY,
-            hit, side, mapTile,
-            lineHeight, brightness,
-            wallX, texX, texture32, color,
-            drawStart, drawEnd,
-            d, texY, texOffset, r, g, b,
-            floorXWall, floorYWall,
-            distWall, distPlayer, currentDist, 
-            weight, currentFloorX , currentFloorY,
-            floorTexX, floorTexY;
-        for (var x = 0; x < w; x++) {
+    var drawWalls = function (viewer, map) {
+        var cameraX, rayPosX, rayPosY, rayDirX, rayDirY, mapX, mapY,
+            deltaDistX, deltaDistY, hit, stepX, stepY, sideDistX, sideDistY, side,
+            mapTile, texture32, perpWallDist, lineHeight, drawStart, drawEnd, wallX, texX,
+            ceilingTex32, floorTex32, floorXWall, floorYWall,
+            d, texY, distWall, distPlayer,
+            currentDist, weight, currentFloorX, currentFloorY, floorTexX, floorTexY,
+            x, y;
+        for (x = 0; x < w; x++) {
             cameraX = 2 * x / w - 1;
             rayPosX = viewer.x;
             rayPosY = viewer.y;
@@ -130,79 +122,76 @@ var TexturedRaycaster = function () {
             sideDistX = (rayDirX < 0) ? (rayPosX - mapX) * deltaDistX : (mapX + 1 - rayPosX) * deltaDistX;
             sideDistY = (rayDirY < 0) ? (rayPosY - mapY) * deltaDistY : (mapY + 1 - rayPosY) * deltaDistY;
             while (hit === 0) {
-                if (sideDistX < sideDistY)
-                {
+                if (sideDistX < sideDistY) {
                     sideDistX += deltaDistX;
                     mapX += stepX;
                     side = 0;
-                }
-                else
-                {
+                } else {
                     sideDistY += deltaDistY;
                     mapY += stepY;
                     side = 1;
                 }
-                if (map[mapX][mapY] > 0) hit = 1;
+                if (map[mapX][mapY] > 0) {
+                    hit = 1;
+                }
             }
+            mapTile = map[mapX][mapY];
+            texture32 = textures32[mapTile - 1];
             perpWallDist = (side === 0) ?
-                Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) 
-                :
+                Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) :
                 Math.abs((mapY - rayPosY + (1 - stepY) / 2) / rayDirY);
             lineHeight = Math.floor(Math.abs(h / perpWallDist));
             drawStart = Math.floor(Math.max(0, -lineHeight / 2 + h / 2));
             drawEnd = Math.floor(Math.min(h, lineHeight / 2 + h / 2));
-            mapTile = map[mapX][mapY];
-            texture32 = textures32[mapTile - 1];
+
             wallX = (side === 1) ?
-                rayPosX + ((mapY - rayPosY + (1 - stepY) / 2) / rayDirY) * rayDirX
-                :
+                rayPosX + ((mapY - rayPosY + (1 - stepY) / 2) / rayDirY) * rayDirX :
                 rayPosY + ((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) * rayDirY;
-            wallX -= Math.floor((wallX));
+            wallX -= Math.floor(wallX);
             texX = Math.floor(wallX * texWidth);
-            if(side === 0 && rayDirX > 0) {
+            if (side === 0 && rayDirX > 0) {
                 texX = texWidth - texX - 1;
             }
-            if(side === 1 && rayDirY < 0) {
+            if (side === 1 && rayDirY < 0) {
                 texX = texWidth - texX - 1;
             }
-            //drawwalls
-            for(var y = drawStart; y < drawEnd; y++) {     
+            // draw walls
+            for (y = drawStart; y < drawEnd; y++) {
                 d = y * 256 - h * 128 + lineHeight * 128;  //256 and 128 factors to avoid floats
                 texY = Math.floor(((d * texHeight) / lineHeight) / 256);
-                buffer32[x + y * w] = shadeColor(texture32[texX + texY * texWidth],  Math.min(1, (1/perpWallDist * 3) * (side / -2 + 1)));
-            }
+                buffer32[x + y * w] = shadeColor(texture32[texX + texY * texWidth],  Math.min(1, (1 / perpWallDist * 3) * (side / -2 + 1)));
+            } // for y (walls)
             //floor and ceiling
-            var ceilingTex32 = textures32[0];
-            var floorTex32 = textures32[1];
+            ceilingTex32 = textures32[0];
+            floorTex32 = textures32[1];
             if (side === 0 && rayDirX > 0) {
-              floorXWall = mapX;
-              floorYWall = mapY + wallX;
+                floorXWall = mapX;
+                floorYWall = mapY + wallX;
             } else if (side === 0 && rayDirX < 0) {
-              floorXWall = mapX + 1.0;
-              floorYWall = mapY + wallX;
+                floorXWall = mapX + 1.0;
+                floorYWall = mapY + wallX;
             } else if (side === 1 && rayDirY > 0) {
-              floorXWall = mapX + wallX;
-              floorYWall = mapY;
+                floorXWall = mapX + wallX;
+                floorYWall = mapY;
             } else {
-              floorXWall = mapX + wallX;
-              floorYWall = mapY + 1;
+                floorXWall = mapX + wallX;
+                floorYWall = mapY + 1;
             }
             distWall = perpWallDist;
             distPlayer = 0;
-            for(y = drawEnd; y < h; y++) {
+            for (y = drawEnd; y < h; y++) {
                 currentDist = h / (2 * y - h);
                 weight = (currentDist - distPlayer) / (distWall - distPlayer);
                 currentFloorX = weight * floorXWall + (1 - weight) * viewer.x;
                 currentFloorY = weight * floorYWall + (1 - weight) * viewer.y;
                 floorTexX = Math.floor(currentFloorX * texWidth) % texWidth;
                 floorTexY = Math.floor(currentFloorY * texHeight) % texHeight;
-                buffer32[x + y * w] = shadeColor(floorTex32[floorTexX + floorTexY * texWidth], 1/currentDist * 3);
-                buffer32[x + (h - y) * w] = shadeColor(ceilingTex32[floorTexX + floorTexY * texWidth],  1/currentDist * 3);
-
-            }
+                buffer32[x + y * w] = shadeColor(floorTex32[floorTexX + floorTexY * texWidth], 1 / currentDist * 3);
+                buffer32[x + (h - y) * w] = shadeColor(ceilingTex32[floorTexX + floorTexY * texWidth],  1 / currentDist * 3);
+            } // for y (floors/ceilings)
         } // for x
-    imageData.data.set(buffer8);
-    ctx.putImageData(imageData, 0, 0);
+        imageData.data.set(buffer8);
+        ctx.putImageData(imageData, 0, 0);
     };
     var drawScene = function (viewer, map) {
         drawWalls(viewer, map);
@@ -213,4 +202,4 @@ var TexturedRaycaster = function () {
         drawScene:  drawScene,
         debugText:  debugText
     };
-}();
+}());

@@ -98,14 +98,37 @@ var TexturedRaycaster = (function () {
         ctx.font      = "normal 10px Verdana";
         ctx.fillText(text, 10, 20);
     };
+    var drawWallColumn = function (x, texX, height, dist, side, texture32) {
+        var startY = Math.floor(Math.max(0, -height / 2 + h / 2));
+        var endY = Math.floor(Math.min(h, height / 2 + h / 2));
+        var y, d, texY;
+        for (y = startY; y < endY; y++) {
+            d = y * 256 - h * 128 + height * 128;  //256 and 128 factors to avoid floats
+            texY = Math.floor(((d * texHeight) / height) / 256);
+            buffer32[x + y * w] = shadeColor(texture32[texX + texY * texWidth],  Math.min(1, (1 / dist * 3) * (side / -2 + 1)));
+        }
+    };
+    var drawFloorColumn = function (x, viewer, distWall, distPlayer, height, floorXWall, floorYWall, floorTex32, ceilingTex32) {
+        var currentDist, weight, currentFloorX, currentFloorY, floorTexX, floorTexY;
+        var startY = Math.floor(Math.min(h, height / 2 + h / 2));
+        var y;
+        for (y = startY; y < h; y++) {
+            currentDist = h / (2 * y - h);
+            weight = (currentDist - distPlayer) / (distWall - distPlayer);
+            currentFloorX = weight * floorXWall + (1 - weight) * viewer.x;
+            currentFloorY = weight * floorYWall + (1 - weight) * viewer.y;
+            floorTexX = Math.floor(currentFloorX * texWidth) % texWidth;
+            floorTexY = Math.floor(currentFloorY * texHeight) % texHeight;
+            buffer32[x + y * w] = shadeColor(floorTex32[floorTexX + floorTexY * texWidth], 1 / currentDist * 3); // floor
+            buffer32[x + (h - y) * w] = shadeColor(ceilingTex32[floorTexX + floorTexY * texWidth],  1 / currentDist * 3); // ceiling
+        }
+    };
     var drawWalls = function (viewer, map) {
         var cameraX, rayPosX, rayPosY, rayDirX, rayDirY, mapX, mapY,
             deltaDistX, deltaDistY, hit, stepX, stepY, sideDistX, sideDistY, side,
-            mapTile, texture32, perpWallDist, lineHeight, drawStart, drawEnd, wallX, texX,
+            mapTile, texture32, perpWallDist, lineHeight, wallX, texX,
             ceilingTex32, floorTex32, floorXWall, floorYWall,
-            d, texY, distWall, distPlayer,
-            currentDist, weight, currentFloorX, currentFloorY, floorTexX, floorTexY,
-            x, y;
+            x;
         for (x = 0; x < w; x++) {
             cameraX = 2 * x / w - 1;
             rayPosX = viewer.x;
@@ -141,9 +164,6 @@ var TexturedRaycaster = (function () {
                 Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) :
                 Math.abs((mapY - rayPosY + (1 - stepY) / 2) / rayDirY);
             lineHeight = Math.floor(Math.abs(h / perpWallDist));
-            drawStart = Math.floor(Math.max(0, -lineHeight / 2 + h / 2));
-            drawEnd = Math.floor(Math.min(h, lineHeight / 2 + h / 2));
-
             wallX = (side === 1) ?
                 rayPosX + ((mapY - rayPosY + (1 - stepY) / 2) / rayDirY) * rayDirX :
                 rayPosY + ((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) * rayDirY;
@@ -155,13 +175,7 @@ var TexturedRaycaster = (function () {
             if (side === 1 && rayDirY < 0) {
                 texX = texWidth - texX - 1;
             }
-            // draw walls
-            for (y = drawStart; y < drawEnd; y++) {
-                d = y * 256 - h * 128 + lineHeight * 128;  //256 and 128 factors to avoid floats
-                texY = Math.floor(((d * texHeight) / lineHeight) / 256);
-                buffer32[x + y * w] = shadeColor(texture32[texX + texY * texWidth],  Math.min(1, (1 / perpWallDist * 3) * (side / -2 + 1)));
-            } // for y (walls)
-            //floor and ceiling
+            drawWallColumn(x, texX, lineHeight, perpWallDist, side, texture32);
             ceilingTex32 = textures32[0];
             floorTex32 = textures32[1];
             if (side === 0 && rayDirX > 0) {
@@ -177,18 +191,7 @@ var TexturedRaycaster = (function () {
                 floorXWall = mapX + wallX;
                 floorYWall = mapY + 1;
             }
-            distWall = perpWallDist;
-            distPlayer = 0;
-            for (y = drawEnd; y < h; y++) {
-                currentDist = h / (2 * y - h);
-                weight = (currentDist - distPlayer) / (distWall - distPlayer);
-                currentFloorX = weight * floorXWall + (1 - weight) * viewer.x;
-                currentFloorY = weight * floorYWall + (1 - weight) * viewer.y;
-                floorTexX = Math.floor(currentFloorX * texWidth) % texWidth;
-                floorTexY = Math.floor(currentFloorY * texHeight) % texHeight;
-                buffer32[x + y * w] = shadeColor(floorTex32[floorTexX + floorTexY * texWidth], 1 / currentDist * 3);
-                buffer32[x + (h - y) * w] = shadeColor(ceilingTex32[floorTexX + floorTexY * texWidth],  1 / currentDist * 3);
-            } // for y (floors/ceilings)
+            drawFloorColumn(x, viewer, perpWallDist, 0, lineHeight, floorXWall, floorYWall, floorTex32, ceilingTex32);
         } // for x
         imageData.data.set(buffer8);
         ctx.putImageData(imageData, 0, 0);

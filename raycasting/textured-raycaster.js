@@ -4,11 +4,12 @@ var TexturedRaycaster = (function () {
     var options =  {
         pleaseDoShading: true
     };
+    var map;
     var textures = [];
     var textures32 = [];
     var texWidth = 256;
     var texHeight = 256;
-    var ctx, w, h;
+    var ctx, w, h, ceilingTex, floorTex;
     var imageData, buffer, buffer8, buffer32;
     var loadImage = function (src) {
         return new Promise(function (resolve, reject) {
@@ -46,7 +47,7 @@ var TexturedRaycaster = (function () {
             console.log("Preparing Texture: " + i);
         }
     };
-    var init = function (context) {
+    var init = function (context, stage) {
         ctx = context;
         w = ctx.canvas.width;
         h = ctx.canvas.height;
@@ -54,16 +55,12 @@ var TexturedRaycaster = (function () {
         buffer = new ArrayBuffer(w * h * 4);
         buffer8 = new Uint8ClampedArray(buffer);
         buffer32 = new Uint32Array(buffer);
-        var textureList = [
-            'i/m-001.png',
-            'i/m-017.png',
-            'i/m-023.png',
-            'i/m-027.png',
-            'i/m-029.png',
-            'i/m-030.png',
-            'i/m-040.png'
-        ];
-        return loadImages(textureList)
+        map = stage.map;
+        texHeight = stage.textures.height;
+        texWidth = stage.textures.width;
+        ceilingTex = stage.textures.ceiling;
+        floorTex = stage.textures.floor;
+        return loadImages(stage.textures.list)
             .then(imagesToImageData)
             .then(stuffTextureArrays);
     };
@@ -112,18 +109,20 @@ var TexturedRaycaster = (function () {
         var currentDist, weight, currentFloorX, currentFloorY, floorTexX, floorTexY;
         var startY = Math.floor(Math.min(h, height / 2 + h / 2));
         var y;
+        var viewX = viewer.x;
+        var viewY = viewer.y;
         for (y = startY; y < h; y++) {
             currentDist = h / (2 * y - h);
             weight = (currentDist - distPlayer) / (distWall - distPlayer);
-            currentFloorX = weight * floorXWall + (1 - weight) * viewer.x;
-            currentFloorY = weight * floorYWall + (1 - weight) * viewer.y;
+            currentFloorX = weight * floorXWall + (1 - weight) * viewX;
+            currentFloorY = weight * floorYWall + (1 - weight) * viewY;
             floorTexX = Math.floor(currentFloorX * texWidth) % texWidth;
             floorTexY = Math.floor(currentFloorY * texHeight) % texHeight;
             buffer32[x + y * w] = shadeColor(floorTex32[floorTexX + floorTexY * texWidth], 1 / currentDist * 3); // floor
             buffer32[x + (h - y) * w] = shadeColor(ceilingTex32[floorTexX + floorTexY * texWidth],  1 / currentDist * 3); // ceiling
         }
     };
-    var drawWalls = function (viewer, map) {
+    var drawColumns = function (viewer) {
         var cameraX, rayPosX, rayPosY, rayDirX, rayDirY, mapX, mapY,
             deltaDistX, deltaDistY, hit, stepX, stepY, sideDistX, sideDistY, side,
             mapTile, texture32, perpWallDist, lineHeight, wallX, texX,
@@ -176,8 +175,8 @@ var TexturedRaycaster = (function () {
                 texX = texWidth - texX - 1;
             }
             drawWallColumn(x, texX, lineHeight, perpWallDist, side, texture32);
-            ceilingTex32 = textures32[0];
-            floorTex32 = textures32[1];
+            ceilingTex32 = textures32[ceilingTex];
+            floorTex32 = textures32[floorTex];
             if (side === 0 && rayDirX > 0) {
                 floorXWall = mapX;
                 floorYWall = mapY + wallX;
@@ -196,8 +195,8 @@ var TexturedRaycaster = (function () {
         imageData.data.set(buffer8);
         ctx.putImageData(imageData, 0, 0);
     };
-    var drawScene = function (viewer, map) {
-        drawWalls(viewer, map);
+    var drawScene = function (viewer) {
+        drawColumns(viewer);
     };
     return {
         init:       init,

@@ -1,28 +1,29 @@
-var UntexturedRaycaster = function() {
-    var options =  {
+var UntexturedRaycaster = (function () {
+    'use strict';
+    var map, ctx, w, h;
+    var wallColors, floorColor, ceilingColor;
+    var options = {
         pleaseDoShading: true
     };
-    var init = function (context){
+    var init = function (context, stage) {
         ctx = context;
         w = ctx.canvas.width;
         h = ctx.canvas.height;
+        map = stage.map;
+        wallColors = stage.colors.walls;
+        floorColor = stage.colors.floor;
+        ceilingColor = stage.colors.ceiling;
         // no resources to load
     };
     var setOptions = function (newOptions) {
-        for (var key in newOptions) {
-            if (key in options) {
+        var key;
+        for (key in newOptions) {
+            if (newOptions.hasOwnProperty(key) && options[key] !== undefined) {
                 options[key] = newOptions[key];
             }
         }
     };
     var getWallColor = function (tile, side) {
-        var wallColors = [    
-            [255,255,255], // default 
-            [255,220,116], // 1
-            [153,229,104], // 2
-            [228,104,148], // 3
-            [102,102,190]  // 4
-        ];
         var color = [];
         if (tile > 0 && tile < wallColors.length) {
             color = wallColors[tile].slice(0);
@@ -30,17 +31,17 @@ var UntexturedRaycaster = function() {
             color = wallColors[0].slice(0);
         }
         if (side === 1) {
-            color[0] = parseInt(color[0] / 2);
-            color[1] = parseInt(color[1] / 2);
-            color[2] = parseInt(color[2] / 2);
+            color[0] = Math.floor(color[0] / 2);
+            color[1] = Math.floor(color[1] / 2);
+            color[2] = Math.floor(color[2] / 2);
         }
         return color;
     };
-    var shadeColor = function(color, distance) {
-        var brightness = Math.min(1, 1/distance * 6);
-        color[0] = parseInt(color[0] * brightness);
-        color[1] = parseInt(color[1] * brightness);
-        color[2] = parseInt(color[2] * brightness);
+    var shadeColor = function (color, distance) {
+        var brightness = Math.min(1, 1 / distance * 6);
+        color[0] = Math.floor(color[0] * brightness);
+        color[1] = Math.floor(color[1] * brightness);
+        color[2] = Math.floor(color[2] * brightness);
         return color;
     };
     var debugText = function (text) {
@@ -48,27 +49,26 @@ var UntexturedRaycaster = function() {
         ctx.font      = "normal 10px Verdana";
         ctx.fillText(text, 10, 20);
     };
-    var drawCeiling = function() {
-        var color = "rgb( 83, 83, 101)";
-        ctx.fillStyle = color; 
+    var drawCeiling = function () {
+        ctx.fillStyle = ceilingColor;
         ctx.fillRect(0.5, 0.5, w, h);
     };
-    var drawFloor = function() {
-        var color = "rgb(121,121,174)";
-        ctx.fillStyle = color; 
+    var drawFloor = function () {
+        ctx.fillStyle = floorColor;
         ctx.fillRect(0.5, h / 2 - 0.5, w, h);
     };
-    var drawWalls = function (viewer, map) {
-        var perpWallDist, lineHeight, drawStart, drawEnd, colorRGB, oldColor, color;
+    var drawWalls = function (viewer) {
+        var perpWallDist, lineHeight, drawStart, drawEnd, colorRGB, oldColor, color, side;
+        var x;
         ctx.beginPath();
-        for (var x = 0.5; x < w; x++) {
+        for (x = 0.5; x < w; x++) {
             var cameraX = 2 * x / w - 1,
                 rayPosX = viewer.x,
                 rayPosY = viewer.y,
                 rayDirX = viewer.dirX + viewer.planeX * cameraX,
                 rayDirY = viewer.dirY + viewer.planeY * cameraX,
-                mapX = parseInt(rayPosX),
-                mapY = parseInt(rayPosY),
+                mapX = Math.floor(rayPosX),
+                mapY = Math.floor(rayPosY),
                 deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX)),
                 deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY)),
                 hit = 0,
@@ -86,13 +86,15 @@ var UntexturedRaycaster = function() {
                     mapY += stepY;
                     side = 1;
                 }
-                if (map[mapX][mapY] > 0) hit = 1;
+                if (map[mapX][mapY] > 0) {
+                    hit = 1;
+                }
             }
             perpWallDist = (side === 0) ?
                 Math.abs((mapX - rayPosX + (1 - stepX) / 2) / rayDirX) 
                 :
                 Math.abs((mapY - rayPosY + (1 - stepY) / 2) / rayDirY);
-            lineHeight = Math.abs(parseInt(h / perpWallDist));
+            lineHeight = Math.abs(Math.floor(h / perpWallDist));
             drawStart = Math.max(0, -lineHeight / 2 + h / 2);
             drawEnd = Math.min(h - 1, lineHeight / 2 + h / 2);
             colorRGB = getWallColor(map[mapX][mapY], side);
@@ -114,25 +116,13 @@ var UntexturedRaycaster = function() {
         ctx.stroke();
         ctx.closePath();
     };
-    var drawScene = function (viewer, map) {
-        var cameraX,
-            rayPosX, rayPosY,
-            rayDirX, rayDirY,
-            mapX, mapY,
-            sideDistX, sideDistY,
-            deltaDistX, deltaDistY,
-            perpWallDist,
-            stepX, stepY,
-            hit, side, mapTile,
-            lineHeight, brightness,
-            drawStart, drawEnd,
-            color, oldColor;
+    var drawScene = function (viewer) {
         ctx.save();
         ctx.lineCaps = "square";
         ctx.clearRect(0, 0, w, h);
         drawCeiling();
         drawFloor();
-        drawWalls(viewer, map);
+        drawWalls(viewer);
         ctx.restore();
     };
     return {
@@ -141,4 +131,4 @@ var UntexturedRaycaster = function() {
         drawScene:  drawScene,
         debugText:  debugText
     };
-}();
+}());

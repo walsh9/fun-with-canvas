@@ -21,7 +21,8 @@
     var canvasWidth = canvas.width;
     var canvasHeight = canvas.height;
     var ctx = canvas.getContext("2d");
-    var map1 = [
+    var stage1 = {};
+    stage1.map = [
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -47,33 +48,31 @@
         [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ];
-    var map2 =  [
-        [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7],
-        [4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7],
-        [4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7],
-        [4,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7],
-        [4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7],
-        [4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7],
-        [4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1],
-        [4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8],
-        [4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1],
-        [4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8],
-        [4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1],
-        [4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1],
-        [6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6],
-        [8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
-        [6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6],
-        [4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3],
-        [4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2],
-        [4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2],
-        [4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2],
-        [4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2],
-        [4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2],
-        [4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2],
-        [4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2],
-        [4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3]
+    stage1.textures = {};
+    stage1.colors = {};
+    stage1.textures.height = 256;
+    stage1.textures.width = 256;
+    stage1.textures.list = [
+        'i/m-001.png',
+        'i/m-017.png',
+        'i/m-023.png',
+        'i/m-027.png',
+        'i/m-029.png',
+        'i/m-030.png',
+        'i/m-040.png'
     ];
-    var currentMap = map1;
+    stage1.textures.ceiling = 0;
+    stage1.textures.floor = 1;
+    stage1.colors.walls = [    
+        [255,255,255], // default 
+        [255,220,116], // 1
+        [153,229,104], // 2
+        [228,104,148], // 3
+        [102,102,190]  // 4
+    ];
+    stage1.colors.ceiling = "rgb( 83, 83, 101)";
+    stage1.colors.floor = "rgb(121,121,174)";
+    var currentStage = stage1;
     var player = {
         x: 22, 
         y: 12, 
@@ -143,17 +142,17 @@
             }
             stopRender = false;
             renderer.setOptions(options);
-            renderer.init(ctx, main);
+            renderer.init(ctx, currentStage);
         }
     };
     var update = function(time) {
         var moveSpeed =  time * 5;
         var rotSpeed =  time * 3;
         if (38 in keysDown) { // up
-            actions.moveForward(player, currentMap, moveSpeed);
+            actions.moveForward(player, currentStage.map, moveSpeed);
         }
         if (40 in keysDown) { // down
-            actions.moveBackward(player, currentMap, moveSpeed);
+            actions.moveBackward(player, currentStage.map, moveSpeed);
         }
         if (39 in keysDown) { // right
             actions.turnRight(player, rotSpeed);
@@ -189,8 +188,7 @@
                 frameTime -= delta;
                 runTime += delta;
             }
-
-            renderer.drawScene(player, currentMap, frameTime);
+            renderer.drawScene(player);
             if (options.pleaseShowFps) {
                 renderer.debugText(fps.toFixed(2) + " fps");
             }
@@ -198,5 +196,5 @@
             requestAnimationFrame(main, canvas);
         }
     };
-    renderer.init(ctx).then(main);
+    renderer.init(ctx, currentStage).then(main);
 }(canvas));

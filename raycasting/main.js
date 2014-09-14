@@ -16,38 +16,47 @@
         pleaseShowFps: false,
         pleaseDoShading: true
     };
+    var createMap = function (stage) {
+        var map = new ROT.Map.Digger(stage.width, stage.height, {dugPercentage: 0.4});
+        var mapArray = [];
+        var i, j, k, rooms, room, color;
+        for (i = 0; i < stage.height; i++) {
+            mapArray.push([]);
+        }
+        map.create(function (x, y, wall) {
+            mapArray[x][y] = wall ? 1 : 0;
+        });
+        rooms = map.getRooms();
+        for (i = 0; i < rooms.length; i++) {
+            color = Math.floor(ROT.RNG.getUniform() * (stage.textures.list.length - 1) + 1);
+            room = rooms[i];
+            for (j = room.getLeft() - 1; j <= room.getRight() + 1; j++) {
+                for (k = room.getTop() - 1; k <= room.getBottom() + 1; k++) {
+                    if (mapArray[j][k] !== 0) {
+                        mapArray[j][k] = color;
+                    }
+                }
+            }
+        }
+        return mapArray;
+    };
+    var placeInEmptySpace = function (entity, stage) {
+        var x, y;
+        do {
+            x = Math.floor(Math.random() * stage.width);
+            y = Math.floor(Math.random() * stage.height);
+        } while (stage.map[x][y] !== 0);
+        entity.x = x + 0.5;
+        entity.y = y + 0.5;
+    };
     var renderer = TexturedRaycaster;
     var stopRender = false;
     var canvasWidth = canvas.width;
     var canvasHeight = canvas.height;
     var ctx = canvas.getContext("2d");
     var stage1 = {};
-    stage1.map = [
-        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1],
-        [1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1],
-        [1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,0,0,0,0,5,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ];
+    stage1.width = 100;
+    stage1.height = 100;
     stage1.textures = {};
     stage1.colors = {};
     stage1.textures.height = 256;
@@ -63,24 +72,26 @@
     ];
     stage1.textures.ceiling = 0;
     stage1.textures.floor = 1;
-    stage1.colors.walls = [    
+    stage1.colors.walls = [
         [255,255,255], // default 
         [255,220,116], // 1
         [153,229,104], // 2
         [228,104,148], // 3
         [102,102,190]  // 4
     ];
+    stage1.map = createMap(stage1);
     stage1.colors.ceiling = "rgb( 83, 83, 101)";
     stage1.colors.floor = "rgb(121,121,174)";
     var currentStage = stage1;
     var player = {
-        x: 22, 
-        y: 12, 
+        x: 22,
+        y: 12,
         dirX: -1,
         dirY: 0,
         planeX: 0,
         planeY: 0.67
     };
+    placeInEmptySpace(player, currentStage);
     var w = window;
     var keysDown = {};
     var requestAnimationFrame = w.requestAnimationFrame || 

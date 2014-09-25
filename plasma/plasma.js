@@ -99,10 +99,10 @@
     }, false);
 
     var timeStep = (1 / 60) * 1000;
+    var speed = 0.3333333333;
     var update = function (delta) {
-        var step = (timeStep / delta);
+        var step = ((delta * 60) / 1000) * speed;
         paletteOffset += step;
-        console.log(Math.floor(paletteOffset) % 255);
     };
 
     var currentTime = Date.now();

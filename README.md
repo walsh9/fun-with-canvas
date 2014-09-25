@@ -1,6 +1,6 @@
 # Fun Experiments with Html Canvas
 
-## Raycaster
+## [Raycaster](https://walsh9.github.io/fun-with-canvas/raycasting/index.html)
 
 A canvas implementation of a raycasting engine.
 
@@ -16,7 +16,7 @@ For squeezing a few extra frames out of the pixel by pixel rendering, the MDN ar
 
 I'd like to make a `drawImage` based renderer at some point.
 
-## Plasma
+## [Plasma](https://walsh9.github.io/fun-with-canvas/plasma/plasma.html)
 
 Canvas implementation of an oldschool palette-cycling plasma effect based on math from [Lode Vandevenne's CG Tutorials](http://lodev.org/cgtutor/).
 

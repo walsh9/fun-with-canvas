@@ -3,9 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Plasma</title>
+    <style>
+    body {
+      margin:0;
+      padding:0;
+    }
+    .main {
+      padding: 20px;
+    }
+    canvas, .instructions {
+      display: block;
+      margin: auto;
+      width: 640px;
+    }
+  </style>
 </head>
 <body>
-<canvas id="canvas1" width="640" height="640"></canvas>
+  <div class="main">
+    <canvas id="canvas1" width="640" height="640"></canvas>
+    <div class="instructions">
+      <p>click = randomize plasma</p>
+      <p>hover mouse = affect plasma</p>
+    </div>
+  </div>
 <script>
   canvas = document.getElementById("canvas1");
 </script>

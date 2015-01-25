@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wavy Text Scroller</title>
+    <style type="text/css">
+    #textcanvas {
+        display:none;
+    }
+    #scrollcanvas {
+        display: block; 
+        margin: auto; 
+        border-radius: 5px; 
+        box-shadow: 0 0 10px #000
+    }
+    </style>
+</head>
+<body>
+    <canvas id="textcanvas" width="2400" height="480"></canvas>
+    <canvas id="scrollcanvas" width="640" height="480"></canvas>
+    <label>Message <input id="message" value="COOL WAVY TEXT" type="text"></label><br>
+    <label>Frequency <input id="freq" type="range" min="1" value="50" max="200"></label><br>
+    <label>Amplitude <input id="amp" type="range" min="0" value="5" max="50"></label><br>
+    <label>Speed <input id="speed" type="range" min=".111" value="5" max="50"></label><br>
+    <button id="palette" type="button">Randomize Palette</button>
+    <script type="text/javascript" src="wavy.js"></script>
+</body>
+</html>

@@ -15,7 +15,7 @@
         textctx.fillRect(0, 0, textcanvas.width, textcanvas.height);
         textctx.fillStyle = "#eeeeee";
         textctx.font = "bold 100px impact";
-        textctx.fillText(message, w, 290); 
+        textctx.fillText(message, w, 150); 
     };
     var palette;
     var randomizePalette = function () {

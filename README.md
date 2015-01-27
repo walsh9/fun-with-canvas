@@ -20,6 +20,10 @@ I'd like to make a `drawImage` based renderer at some point.
 
 Canvas implementation of an oldschool palette-cycling plasma effect based on math from [Lode Vandevenne's CG Tutorials](http://lodev.org/cgtutor/).
 
+## [Cool Wavy Text](https://walsh9.github.io/fun-with-canvas/wavy/index.html)
+
+Text that slides up and down along a sine wave.
+
 ## Other notes
 
 Glenn Fiedler's article, [Fix Your Timestep!](http://gafferongames.com/game-physics/fix-your-timestep/) was tremendously helpful for coordinating the timing of the rendering and state updates.

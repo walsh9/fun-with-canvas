@@ -41,7 +41,7 @@
         var realxoffset = Math.floor(xoffset) % (textcanvas.width - w);
         var sourceData = textctx.getImageData(realxoffset, 0, w, h).data;
         var wavyData = wavyctx.createImageData(w, h);
-        var freq = document.getElementById('freq').value;
+        var freq = document.getElementById('freq').value; //would be nice if these weren't hardcoded...
         var amp = document.getElementById('amp').value;
         for (var y = 0; y < h; y++) {
             for (var x = 0; x < w; x++) {

@@ -1,0 +1,156 @@
+    body {
+        margin:0;
+        padding:0;
+    }
+    html, body, #content {
+        height: 100%;
+        background: #004F4F;
+    }
+    #content {
+        width: 640px;
+        margin: 0 auto;
+        background: black;
+    }
+    #wavycanvas {
+        display: block; 
+        margin: auto; 
+    }
+    #controls {
+        padding: 20px 20px;
+    }
+    #controls label {
+        font-size: 20px;
+        white-space: pre;
+        font-family: Consolas, Inconsolata, monospace;
+        color: #00ff00;
+        text-shadow: 0px 0px 5px #00ff00;
+    }
+    #controls input[type=text] {
+        color: #00ff00;
+        text-shadow: 0px 0px 5px #00ff00;
+        font-size: 20px;
+        font-family: Consolas, Inconsolata, monospace;
+        width: 400px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #00ff00;
+    }
+    #controls input[type=text]:active,
+    #controls input[type=text]:hover,
+    #controls input[type=text]:focus {
+            outline: none;
+            background: #002200;
+    }
+
+    #controls input {
+        margin-top: 5px;
+        margin-left: 5px;
+    }
+    #controls input[type=range] {
+        -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+        width: 400px;
+    }
+    #controls input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+    }
+    #controls input[type=range]:focus {
+        outline: none;
+    }
+    #controls input::-moz-focus-outer,
+    #controls input::-moz-focus-inner{
+        border: 0;
+    }
+    input[type=range]::-ms-track {
+        width: 100%;
+        cursor: pointer;
+        background: transparent; 
+        border-color: transparent;
+        color: transparent;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        margin-top: 0px; 
+        height: 20px;
+        width: 16px;
+        background: #00ff00;
+        cursor: pointer;
+        border-radius: 0;
+        border: none;
+        box-shadow: 0px 0px 5px rgba(0,255,0,.3); 
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 20px;
+        cursor: pointer;
+        background: #00aa00;
+        box-shadow: 0px 0px 5px 3px rgba(0,255,0,.3);
+    }
+    input[type=range]:hover::-webkit-slider-runnable-track,
+    input[type=range]:focus::-webkit-slider-runnable-track,
+    input[type=range]:active::-webkit-slider-runnable-track {
+        background: #00cc00;
+    }
+
+    input[type=range]::-moz-range-thumb {
+        height: 20px;
+        width: 16px;
+        background: #00ff00;
+        cursor: pointer;
+        border-radius: 0;
+        border: none;
+        box-shadow: 0px 0px 5px rgba(0,255,0,.3); 
+    }
+    input[type=range]::-moz-range-track {  
+        width: 100%;
+        height: 20px;
+        cursor: pointer;
+        background: #00aa00;
+        box-shadow: 0px 0px 5px 3px rgba(0,255,0,.3); 
+    }
+    input[type=range]:hover::-moz-range-track,
+    input[type=range]:focus::-moz-range-track,
+    input[type=range]:active::-moz-range-track {
+        transition: background .4s ease-out;
+        background: #00cc00;
+        outline: none;
+    }
+
+    input[type=range]::-ms-thumb {
+        height: 20px;
+        width: 16px;
+        background: #00ff00;
+        cursor: pointer;
+        border-radius: 0;
+        border: none;
+        box-shadow: 0px 0px 5px rgba(0,255,0,.3); 
+    }
+    input[type="range"]::-ms-track {  
+        width: 100%;
+        height: 20px;
+        cursor: pointer;
+        background: #00aa00;
+        box-shadow: 0px 0px 5px 3px rgba(0,255,0,.3);
+    }
+
+    #controls input[type=button] {
+        border: none;
+        margin: 0;
+        display: block;
+        background: #00aa00;
+        color: black;
+        font-size: 20px;
+        cursor: pointer;
+        font-family: Consolas, Inconsolata, monospace;
+    }
+    #controls input[type=button]:hover,
+    #controls input[type=button]:focus,
+    #controls input[type=button]:active {
+        background: #00ff00;
+        box-shadow: 0px 0px 5px 3px rgba(0,255,0,.3);
+    }
+
+    #controls input{ 
+        transition: background .4s ease-out;
+        transition: box-shadow .4s ease-out;
+    }

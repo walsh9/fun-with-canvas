@@ -3,28 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Wavy Text Scroller</title>
-    <style type="text/css">
-    #wavycanvas {
-        display: block; 
-        margin: auto; 
-        border-radius: 5px; 
-        box-shadow: 0 0 10px #000
-    }
-    #controls {
-        width: 640px;
-        margin: 20px auto;         
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="wavy.css"></link>
 </head>
 <body>
-    <canvas id="wavycanvas" width="640" height="240"></canvas>
-    <div id="controls">
-
-        <label>Message <input id="message" value="COOL WAVY TEXT" type="text"></label><br>
-        <label>Wave Length <input id="freq" type="range" min="1" value="50" max="100"></label><br>
-        <label>Waviness <input id="amp" type="range" min="0" value="5" max="50"></label><br>
-        <label>Speed <input id="speed" type="range" min=".111" value="5" max="25"></label><br><br>
-        <button id="palette" type="button">Randomize Palette</button>
+    <div id="content">
+        <canvas id="wavycanvas" width="640" height="240"></canvas>
+        <div id="controls">
+            <label>Message      <input id="message" value="COOL WAVY TEXT" type="text"></label><br>
+            <label>Wave Length  <input id="freq" type="range" min="1" value="50" max="100"></label><br>
+            <label>Waviness     <input id="amp" type="range" min="0" value="5" max="50"></label><br>
+            <label>Scroll Speed <input id="speed" type="range" min=".111" value="5" max="25"></label><br><br>
+            <input id="palette" type="button" value="> Randomize Palette <"></button>
+        </div>
     </div>
     <script>
       var canvas = document.getElementById("wavycanvas");

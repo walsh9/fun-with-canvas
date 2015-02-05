@@ -1,6 +1,7 @@
-# Fun Experiments with Html Canvas
+# Fun Experiments with HTML Canvas
 
 ## [Raycaster](https://walsh9.github.io/fun-with-canvas/raycasting/index.html)
+![Raycaster](https://cloud.githubusercontent.com/assets/6074785/6063788/f3408b44-ad27-11e4-9328-35b112efbbd9.png)
 
 A canvas implementation of a raycasting engine.
 
@@ -17,10 +18,12 @@ For squeezing a few extra frames out of the pixel by pixel rendering, the MDN ar
 I'd like to make a `drawImage` based renderer at some point.
 
 ## [Plasma](https://walsh9.github.io/fun-with-canvas/plasma/plasma.html)
+![Plasma](https://cloud.githubusercontent.com/assets/6074785/6063789/f3425af0-ad27-11e4-964e-ab15a134933d.png)
 
 Canvas implementation of an oldschool palette-cycling plasma effect based on math from [Lode Vandevenne's CG Tutorials](http://lodev.org/cgtutor/).
 
 ## [Cool Wavy Text](https://walsh9.github.io/fun-with-canvas/wavy/index.html)
+![Cool Wavy Text](https://cloud.githubusercontent.com/assets/6074785/6063790/f34370d4-ad27-11e4-8048-e1acc5295dbf.png)
 
 Text that slides up and down along a sine wave.
 
